@@ -1,0 +1,34 @@
+:root {
+    --color-main-text: #e0b38a;
+}
+
+
+$md: 992;
+$mb: 568;
+
+@mixin tighter($size) {
+    @media (max-width: #{$size}px) {
+        @content;
+    }
+}
+
+@mixin wider($size) {
+    @media (min-width: #{$size + 1}px) {
+        @content;
+    }
+}
+
+@mixin mobile {
+    @media only screen {
+        @include tighter($md) {
+            @content;
+        }
+    }
+}
+@mixin mobile2 {
+    @media only screen {
+        @include tighter($mb) {
+            @content;
+        }
+    }
+}

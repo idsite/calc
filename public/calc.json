@@ -1,0 +1,231 @@
+{
+  "properties": [
+    {
+      "name": "Упаковка товара на базе производства",
+      "options": [
+        {
+          "name": "Упаковка на базе производства",
+          "prices": [
+            {
+              "with_nds": 45,
+              "without_nds": 45
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Бирки",
+      "hint": "тип отверстия, тип бумаги, размер, наличие тиснения, тип тиснения",
+      "options": [
+        {
+          "name": "Бирки 60*130 мм, овальные отверстия",
+          "prices": [
+            {
+              "with_nds": 15.24,
+              "without_nds": 12.96
+            },
+            {
+              "with_nds": 11.9,
+              "without_nds": 10.12,
+              "min": 1000
+            },
+            {
+              "with_nds": 10.54,
+              "without_nds": 8.96,
+              "min": 2000
+            }
+          ]
+        },
+        {
+          "name": "Бирки 60*130 мм, круглые отверстия",
+          "prices": [
+            {
+              "with_nds": 7.79,
+              "without_nds": 6.63
+            },
+            {
+              "with_nds": 5.27,
+              "without_nds": 4.48,
+              "min": 1000
+            },
+            {
+              "with_nds": 4.92,
+              "without_nds": 4.19,
+              "min": 2000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Коробки упаковочные",
+      "hint": "тип бумаги, размер, наличие тиснения, тип тиснения",
+      "options": [
+        {
+          "name": "Коробки упаковочные 45*110*110 мм",
+          "prices": [
+            {
+              "with_nds": 52.12,
+              "without_nds": 44.31
+            },
+            {
+              "with_nds": 17.24,
+              "without_nds": 14.66,
+              "min": 1000
+            },
+            {
+              "with_nds": 12.31,
+              "without_nds": 10.47,
+              "min": 2000
+            }
+          ]
+        },
+        {
+          "name": "Коробки упаковочные test 85*810*810 мм",
+          "sku": "3503",
+          "prices": [
+            {
+              "with_nds": 82.12,
+              "without_nds": 84.31
+            },
+            {
+              "with_nds": 27.24,
+              "without_nds": 24.66,
+              "min": 1000
+            },
+            {
+              "with_nds": 12.31,
+              "without_nds": 10.47,
+              "min": 2000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Тиснение на внутренню сторону ремня",
+      "options": [
+        {
+          "name": "Блинтовое",
+          "prices": [
+            {
+              "with_nds": 10,
+              "without_nds": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Клише для тиснения на Ремень, латунь",
+      "parent": "Тиснение на внутренню сторону ремня",
+      "once": true,
+      "type": "checkbox",
+      "together": true,
+      "prices": [
+        {
+          "with_nds": 5000,
+          "without_nds": 5000
+        }
+      ]
+    },
+    {
+      "name": "Монтаж оснастки клише на Ремень",
+      "parent": "Тиснение на внутренню сторону ремня",
+      "once": true,
+      "together": true,
+      "type": "checkbox",
+      "prices": [
+        {
+          "with_nds": 3000,
+          "without_nds": 3000
+        }
+      ]
+    },
+    {
+      "name": "Клише для тиснения на Бирке",
+      "once": true,
+      "type": "checkbox",
+      "prices": [
+        {
+          "with_nds": 2500,
+          "without_nds": 2500
+        }
+      ]
+    },
+    {
+      "name": "Клише для тиснения на Коробке",
+      "once": true,
+      "type": "checkbox",
+      "prices": [
+        {
+          "with_nds": 3000,
+          "without_nds": 3000
+        }
+      ]
+    },
+    {
+      "name": "Пакет с липучкой",
+      "type": "checkbox",
+      "prices": [
+        {
+          "with_nds": 1.5,
+          "without_nds": 1.5
+        }
+      ]
+    },
+    {
+      "name": "Транспортировочная коробка",
+      "type": "checkbox",
+      "prices": [
+        {
+          "with_nds": 15,
+          "without_nds": 15
+        }
+      ]
+    },
+    {
+      "name": "Флексограмма для транспортировочных коробок",
+      "parent": "Транспортировочная коробка",
+      "once": true,
+      "type": "checkbox",
+      "prices": [
+        {
+          "with_nds": 9000,
+          "without_nds": 9000
+        }
+      ]
+    }
+  ],
+  "discounts_count": [
+    {
+      "min": 600,
+      "val": 30
+    },
+    {
+      "min": 500,
+      "val": 25
+    },
+    {
+      "min": 400,
+      "val": 20
+    },
+    {
+      "min": 300,
+      "val": 15
+    },
+    {
+      "min": 200,
+      "val": 10
+    },
+    {
+      "min": 100,
+      "val": 8
+    },
+    {
+      "min": 50,
+      "val": 5
+    }
+  ]
+}
