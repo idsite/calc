@@ -104,7 +104,7 @@ function share() {
       <input class="calc-add-dialog-share__inp" readonly type="text" v-model="props.url" placeholder="url" ref="inp_ref" autofocus>
       <div class="calc-add-dialog-share__actions">
         <button class="btn" type="button" @click="copy">Копировать</button>
-        <button v-if="showShare" class="btn btn--calc-share" type="button" @click="share">Поделится</button>
+        <button v-if="showShare" class="btn btn--calc-share" type="button" @click="share">Поделиться</button>
       </div>
     </div>
   </dialog>
