@@ -1,10 +1,10 @@
 <script setup>
 
 import {onMounted, shallowRef, useTemplateRef, watch} from "vue";
+import {urlProduct} from "@/helpers.js";
 
-const urlProduct = '/get_by_article.php'; //https://kojinvest.ru/get_by_article.php?article=3504-0300
-const article = shallowRef('');
-const error = shallowRef('null');
+const article = shallowRef(null);
+const error = shallowRef(null);
 
 const show = defineModel('show');
 const emit = defineEmits(['add'])
@@ -16,8 +16,8 @@ onMounted(()=>{
     if (v) {
       dialogAdd.value.show();
       dialogAdd.value.style.display = 'block';
-      error.value='';
-      article.value='';
+      error.value=null;
+      article.value=null;
       inpRef.value.focus();
     } else {
       dialogAdd.value.close();

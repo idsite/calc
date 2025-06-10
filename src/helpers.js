@@ -29,3 +29,6 @@ export function getPrice(prices, count, withNDS) {
         }
     }
 }
+
+
+export const urlProduct = '/get_by_article.php';

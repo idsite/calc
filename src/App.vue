@@ -1,16 +1,17 @@
 <script setup>
-import {computed, reactive, shallowRef} from "vue";
+import {computed, nextTick, onMounted, reactive, shallowRef} from "vue";
 import AddProduct from "@/components/AddProduct.vue";
 import Property from "@/components/Property.vue";
-import {getPrice, money} from "@/helpers.js";
+import {getPrice, money, urlProduct} from "@/helpers.js";
+import ShareDialog from "@/components/ShareDialog.vue";
 
 const {data} = defineProps(['data']);
 const discounts_count = data.discounts_count;
 
-discounts_count.sort((a,b)=>{
-  if (a.min || 0<b.min || 0) {
+discounts_count.sort((a, b) => {
+  if (a.min || 0 < b.min || 0) {
     return 1;
-  } else if (a.min || 0>b.min || 0) {
+  } else if (a.min || 0 > b.min || 0) {
     return -1;
   }
   // a must be equal to b
@@ -20,6 +21,8 @@ discounts_count.sort((a,b)=>{
 
 const withNDS = shallowRef(false);
 const showAdd = shallowRef(false);
+const showShare = shallowRef(false);
+const shareUrl = shallowRef('');
 
 const products = reactive([]);
 const resultCalc = computed(() => {
@@ -33,9 +36,9 @@ const resultCalc = computed(() => {
     let price = c * item.price;
     let s = 0;
 //console.log('discounts_count', discounts_count);
-    const ds  = discounts_count.find(v=>v.min<=c);
+    const ds = discounts_count.find(v => v.min <= c);
     if (ds) {
-      s = ds.val/100;
+      s = ds.val / 100;
     }
 
     if (s > 0) {
@@ -51,7 +54,7 @@ const resultCalc = computed(() => {
         propsDisabled.add(prop.name);
         return;
       }
-      let enable =item.options[prop.name] && item.options[prop.name].enable;
+      let enable = item.options[prop.name] && item.options[prop.name].enable;
       if (!enable && item.options[prop.name] && prop.parent && item.options[prop.parent].enable && prop.together) {
         item.options[prop.name].enable = true;
         enable = true;
@@ -102,15 +105,64 @@ const amountTotal = computed(() => {
   resultCalc.value.forEach(value => {
     c += value.price;
   });
-  return c;
+  return c.toFixed(2);
 });
 
 function reset() {
   while (products.length) products.shift();
+  window.location.hash = '';
 }
 
-function addProduct(p) {
-  console.log(p);
+async function restoreFromUrl() {
+  const d = location.hash.replace('#', '');
+  if (d && d !== '') {
+    const data = JSON.parse(atob(d));
+    console.log('data', data)
+    const products = await Promise.all(data[0].map((item) => {
+
+      return new Promise(async (resolve, reject) => {
+        await fetch(urlProduct + '?article=' + encodeURIComponent(item[0].trim())).then(res => res.json()).then((res) => {
+          const item2 = [...item];
+          item2[0] = res;
+          return resolve(item2);
+        }).catch(e => reject(e));
+
+      });
+
+    }));
+
+    console.log('products', products);
+    for (const product of products) {
+      addProduct(product[0], product[1], product[2].map(([v1, v2]) => ({
+        enable: v1,
+        value: v2
+      })))
+    }
+    withNDS.value = data[1];
+
+    await nextTick();
+    console.log(amountTotal.value, data[2]);
+    if (data[2] !== amountTotal.value) {
+      alert('Цена изменилась');
+      throw new Error('changed price');
+    }
+
+  }
+  window.location.hash = '';
+}
+
+onMounted(async () => {
+  try {
+    await restoreFromUrl();
+  } catch (e) {
+    console.log(e);
+    reset();
+  }
+
+});
+
+function addProduct(p, count = 1, values = null) {
+  console.log(p, count, values);
   showAdd.value = false;
   if (products.find(v => v.id === p.id)) {
     return;
@@ -118,11 +170,11 @@ function addProduct(p) {
 
   products.push({
     ...p,
-    count: 1,
+    count: count,
     options: data.properties.reduce((acc, v, i) => {
       return {
         ...acc,
-        [v.name]: {
+        [v.name]: (values && values[i]) ? values[i] : {
           enable: false,
           value: 0
         },
@@ -136,6 +188,26 @@ function removeProduct(product) {
   if (i !== -1) {
     products.splice(i, 1);
   }
+  if (product.length === 0) {
+    window.location.hash = '';
+  }
+}
+
+function getShare() {
+  const data = [];
+  for (let i = 0; i < products.length; i++) {
+    const item = products[i];
+    data.push([item.article, item.count, Object.values(item.options).map(v => [v.enable, v.value])]);
+  }
+
+  return [data, withNDS.value, amountTotal.value];
+}
+
+function share() {
+  const data = btoa(JSON.stringify(getShare()));
+  // window.location.hash = data;
+  shareUrl.value = window.location.origin + window.location.pathname + '#' + data;
+  showShare.value = true;
 }
 
 
@@ -148,7 +220,7 @@ function removeProduct(product) {
 
         <div class="calc__product-info">
           <a class="calc__product-link" :href="'/'+product.uri" target="_blank">
-            <div class="calc__product-img-wrap" ><img class="calc__product-img" :src="product.thumb"/></div>
+            <div class="calc__product-img-wrap"><img class="calc__product-img" :src="product.thumb"/></div>
             <div class="calc__product-name">{{ product.name }}</div>
             <div class="calc__product-article">{{ product.article }}</div>
             <div class="calc__product-price">{{ money(product.price) }}</div>
@@ -165,7 +237,7 @@ function removeProduct(product) {
         <div class="calc__product-count">
           <label><span>Количество</span><input min="1" type="number" v-model="product.count"></label>
           <div class="calc__product-discount">Скидка {{ resultCalc.get(product.id).discount }}%</div>
-          <div class="calc__product-price-with-count">{{money(resultCalc.get(product.id).priceProduct)}}</div>
+          <div class="calc__product-price-with-count">{{ money(resultCalc.get(product.id).priceProduct) }}</div>
         </div>
         <table class="calc__properties">
           <Property class="calc__properties-item" v-for="(prop, index) in data.properties"
@@ -190,7 +262,7 @@ function removeProduct(product) {
     <div class="calc__action">
       <button class="btn" @click="showAdd = true">+ Добавить товар</button>
     </div>
-    <div class="calc__summary" v-show="products.length>0" >
+    <div class="calc__summary" v-show="products.length>0">
       <table class="calc__summary-table">
         <tr>
           <th>Сумма заказа</th>
@@ -208,18 +280,26 @@ function removeProduct(product) {
           </td>
         </tr>
       </table>
-      <div class="calc__link calc__reset" @click="reset"  >Сбросить и посчитать заново</div>
+      <div class="calc__share-row" >
+        <button class="btn calc__btn-link" @click="share">Поделиться</button>
+      </div>
+      <div class="calc__link calc__reset" @click="reset">Сбросить и посчитать заново</div>
     </div>
     <AddProduct @add="addProduct" v-model:show="showAdd"/>
-
+    <ShareDialog :url="shareUrl" v-model:show="showShare"/>
 
   </div>
 </template>
 
 <style lang="scss">
 @use "@/assets/main.scss" as *;
+
 .calc-error {
   color: #ef3535;
+}
+
+.calc-success {
+  color: green;
 }
 
 .calc {
@@ -231,14 +311,22 @@ function removeProduct(product) {
   &__action {
     text-align: center;
   }
-  td:first-child,th:first-child {
+
+  td:first-child, th:first-child {
     text-align: left;
   }
+
   label {
-     font-weight: 500;
+    font-weight: 500;
   }
-
-
+  &__share-row {
+    margin-bottom: 20px;
+    margin-top: 20px;
+    display: flex;
+    .btn {
+      margin-right: 0;
+    }
+  }
 
 
   &__link {
@@ -253,6 +341,7 @@ function removeProduct(product) {
     background-color: #f1f0f0;
     padding: 20px;
     margin-bottom: 30px;
+
     &:empty {
       display: none;
     }
@@ -262,6 +351,7 @@ function removeProduct(product) {
     margin-bottom: 30px;
     padding: 10px;
     border: 1px dashed #d9b9a1;
+
     &:last-child {
       margin-bottom: 0;
     }
@@ -275,6 +365,7 @@ function removeProduct(product) {
     & > * {
       margin-right: 20px;
     }
+
     @include mobile {
       flex-wrap: wrap;
       .calc__product-img-wrap {
@@ -297,7 +388,7 @@ function removeProduct(product) {
     font-family: "Arno Pro";
     font-weight: bold;
     font-size: 22px;
-    color: #b376calc(100% - 40px)5d;
+    color: #b3765d;
     letter-spacing: 1.9px;
 
   }
@@ -335,6 +426,7 @@ function removeProduct(product) {
       label {
         display: flex;
         flex-wrap: wrap;
+
         span {
           display: block;
           width: 100%;
@@ -344,6 +436,7 @@ function removeProduct(product) {
       }
     }
   }
+
   &__product-price-with-count {
     margin-left: auto;
   }
@@ -355,6 +448,7 @@ function removeProduct(product) {
     td {
       padding: 10px 0;
     }
+
     @include mobile {
       display: block;
       tr {
@@ -366,7 +460,7 @@ function removeProduct(product) {
 
   &__properties-item {
     @include mobile {
-     padding: 10px 0;
+      padding: 10px 0;
       &:last-child {
         margin-bottom: 0;
       }
@@ -393,9 +487,11 @@ function removeProduct(product) {
 
   &__summary-table {
     width: 100%;
+
     th:nth-child(1) {
       text-align: left;
     }
+
     td:nth-child(2) {
       text-align: right;
     }
